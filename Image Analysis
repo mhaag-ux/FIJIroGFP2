@@ -1,0 +1,240 @@
+macro "AnaPR Action Tool - Cf00T1e19A" {
+
+if (isOpen("ROI Manager")) {
+     selectWindow("ROI Manager");
+     run("Close"); } // to reset ROImanager
+
+
+n = getTitle();
+path = "C:/Users/Sony/Desktop/temptitles/";
+list = getFileList(path);
+i = list.length + 1; 
+f = File.open(path + i +".txt");
+print(f, n);
+
+
+//setBatchMode(true);
+run("Select All");
+run("Duplicate...", "duplicate");
+rename("tobeanalysed");
+run("Duplicate...", "duplicate");
+rename("original");
+selectWindow("tobeanalysed");
+run("Split Channels");
+
+/*sort out AF channel for standard analysis:
+selectWindow("C3-tobeanalysed");
+run("Close");
+selectWindow("C4-tobeanalysed");
+rename("C3-tobeanalysed"); */
+
+      if (getBoolean("Perform Multistackreg")) {
+path = "C:/Users/Sony/Desktop/transformation/";
+list = getFileList(path);
+i = list.length + 1; 
+run("MultiStackReg", "stack_1=C3-tobeanalysed action_1=Align file_1="+path+"TM" +(i)+".txt stack_2=None action_2=Ignore file_2=[] transformation=[Rigid Body] save");
+selectWindow("C1-tobeanalysed");
+run("MultiStackReg", "stack_1=C2-tobeanalysed action_1=[Load Transformation File] file_1="+path+"TM" +(i)+".txt stack_2=None action_2=Ignore file_2=[] transformation=[Rigid Body]");
+run("MultiStackReg", "stack_1=C1-tobeanalysed action_1=[Load Transformation File] file_1="+path+"TM" +(i)+".txt stack_2=None action_2=Ignore file_2=[] transformation=[Rigid Body]");
+      }
+setBatchMode("exit and display");
+selectWindow("C3-tobeanalysed");
+rename("DICreg");
+			//selectWindow("C2-tobeanalysed");
+			//run("Duplicate...", "duplicate");
+			//rename("C2-reg");
+			//selectWindow("C1-tobeanalysed");
+			//run("Duplicate...", "duplicate");
+			//rename("C1-reg");
+selectWindow("C2-tobeanalysed");
+run("Duplicate...", "duplicate");
+rename("C2-Prist");
+selectWindow("C2-tobeanalysed");
+run("Median...", "radius=2 stack");
+selectWindow("C1-tobeanalysed");
+run("Duplicate...", "duplicate");
+rename("C1-Prist");
+selectWindow("C1-tobeanalysed");
+run("Median...", "radius=2 stack");
+
+selectWindow("C2-tobeanalysed");
+selectWindow("DICreg");
+waitForUser("check success");
+successdialog=getBoolean("Success?");   //achtung große klammer bis ganz ans Ende zu else
+      if (successdialog) {
+     
+setTool("rectangle");
+selectWindow("original");
+waitForUser("crop rectangle");
+roiManager("add");
+                if (roiManager("count")==0)
+               exit("you must draw region first");
+               if (roiManager("count")!=1)
+               exit("excess number of rois");
+roiManager("Select", 0);
+run("Crop");
+selectWindow("DICreg");
+roiManager("Select", 0);
+run("Crop");
+selectWindow("C1-tobeanalysed");
+roiManager("Select", 0);
+run("Crop");
+selectWindow("C2-tobeanalysed");
+roiManager("Select", 0);
+run("Crop");
+selectWindow("C1-Prist");
+roiManager("Select", 0);
+run("Crop");
+selectWindow("C2-Prist");
+roiManager("Select", 0);
+run("Crop");
+roiManager("Select", 0);
+roiManager("Delete");  
+			selectWindow("C2-tobeanalysed");
+			run("Select All");
+			run("Duplicate...", "duplicate");
+			rename("C2reg");
+			selectWindow("C1-tobeanalysed");
+			run("Duplicate...", "duplicate");
+			rename("C1reg");
+selectWindow("DICreg");
+setSlice(1); 
+setTool("freehand");
+waitForUser("select Roi for RBC background");
+selectWindow("C1-tobeanalysed");
+run("Restore Selection");
+roiManager("add");
+                if (roiManager("count")==0)
+               exit("you must draw region first");
+               if (roiManager("count")!=1)
+               exit("excess number of rois");
+roiManager("Select", 0);
+roiManager("Rename", "bgrRbc");               
+ currentTitle = getTitle();
+ currentID=getImageID();
+ run("Set Measurements...", "  mean standard redirect=None decimal=2");
+ scaling=0;
+ //scaling=getNumber("Enter Scaling factor",3) //set number of SD to pad mean bkgd by
+ selectImage(currentID);
+ if (nSlices>1){
+     setSlice(1);
+	 run("Plot Z-axis Profile");    run("Close"); 
+	  for (i=1; i<=nSlices; i++){
+	  	bgmean=getResult("Mean",(i-1));
+		bgStdev=getResult("StdDev",(nResults-1));
+		bgTotal=bgmean+(scaling*bgStdev);
+		selectImage(currentID);
+		run("Set Slice...", "slice="+i);
+		run("Select All");
+		run("Subtract...", "slice value="+bgTotal);
+		print(bgmean);}
+		}
+if (nSlices==1)  {run("Measure"); 
+		selectImage(currentID);
+ 		bgmean=getResult("Mean",(nResults-1));
+		bgStdev=getResult("StdDev",(nResults-1));
+		bgTotal=bgmean+(scaling*bgStdev);
+		run("Select All");
+		run("Subtract...", "value="+bgTotal);
+		run("Select None");
+		}
+//selectWindow("Results");
+			//run("Close");
+			run("Clear Results");
+selectWindow("C2-tobeanalysed");
+roiManager("Select", 0);
+                if (roiManager("count")==0)
+               exit("you must draw region first");
+ currentTitle = getTitle();
+ currentID=getImageID();
+ run("Set Measurements...", "  mean standard redirect=None decimal=2");
+ scaling=0;
+ //scaling=getNumber("Enter Scaling factor",3) //set number of SD to pad mean bkgd by
+ selectImage(currentID);
+  if (nSlices>1){
+     setSlice(1);
+	 run("Plot Z-axis Profile");    run("Close"); 
+	  for (i=1; i<=nSlices; i++){
+	  	bgmean=getResult("Mean",(i-1));
+		bgStdev=getResult("StdDev",(nResults-1));
+		bgTotal=bgmean+(scaling*bgStdev);
+		selectImage(currentID);
+		run("Set Slice...", "slice="+i);
+		run("Select All");
+		run("Subtract...", "slice value="+bgTotal);
+		print(bgmean);
+		}
+		}
+  if (nSlices==1)  {run("Measure"); 
+		selectImage(currentID);
+ 		bgmean=getResult("Mean",(nResults-1));
+		bgStdev=getResult("StdDev",(nResults-1));
+		bgTotal=bgmean+(scaling*bgStdev);
+		run("Select All");
+		run("Subtract...", "value="+bgTotal);
+		run("Select None");
+		}
+//selectWindow("Results");
+//run("Close");
+run("Clear Results");
+roiManager("Select", 0);
+roiManager("Delete");  
+selectWindow("C2-tobeanalysed");
+run("Select All");
+run("Duplicate...", "duplicate");
+run("Auto Threshold", "method=Otsu white stack");
+run("Divide...", "value=255 stack");
+imageCalculator("Multiply create 32-bit stack", "C2-tobeanalysed","C2-tobeanalysed-1");
+imageCalculator("Multiply create 32-bit stack", "C1-tobeanalysed","C2-tobeanalysed-1");
+selectWindow("Result of C1-tobeanalysed");
+//run("Threshold...");
+setThreshold(1.0000, 2000000000.0000);
+run("NaN Background", "stack");
+selectWindow("Result of C2-tobeanalysed");
+//run("Threshold...");
+setThreshold(1.0000, 2000000000.0000);
+run("NaN Background", "stack");
+imageCalculator("Divide create 32-bit stack", "Result of C1-tobeanalysed","Result of C2-tobeanalysed");
+selectWindow("Result of Result of C1-tobeanalysed");
+run("Fire");
+run("Multiply...", "value=1000.000 stack");
+run("Enhance Contrast", "saturated=0.35");
+selectWindow("Result of Result of C1-tobeanalysed");
+rename("Ratio");
+run("Synchronize Windows");
+selectWindow("DICreg");
+selectWindow("C2reg");
+
+selectWindow("C1-Prist");
+
+dir = getDirectory(""); 
+
+sdir = dir + n + File.separator;
+File.makeDirectory(sdir);
+
+print(sdir);
+      
+      
+      }
+
+       else {
+selectWindow("C1-Prist");
+run("Close");
+selectWindow("C2-Prist");
+run("Close");
+selectWindow("original");
+run("Close");
+selectWindow("C1-tobeanalysed");
+run("Close");
+selectWindow("C2-tobeanalysed");
+run("Close");
+selectWindow("DICreg");
+run("Close");
+};
+
+
+   
+   
+ }
+
+
