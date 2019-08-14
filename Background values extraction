@@ -1,0 +1,67 @@
+macro "Backgroundvalues Action Tool - Cf00T1e19B" {
+
+
+
+if (isOpen("ROI Manager")) {
+     selectWindow("ROI Manager");
+     run("Close"); } // to reset ROImanager
+run("Clear Results");
+
+path = "C:/Users/Sony/Desktop/temptitles/";
+list = getFileList(path);
+i = list.length; 
+SI = File.openAsString(path + i + ".txt"); 
+lines=split(SI,"\t\n");
+for (i=0; i<lines.length; i++){
+         u = lines[i];}
+
+selectWindow("DICreg");
+waitForUser("ROI for Background");
+//setBatchMode(true);
+roiManager("add");
+                if (roiManager("count")==0)
+               exit("you must draw region first");
+               if (roiManager("count")!=1)
+               exit("excess number of rois");
+selectWindow("C1reg");
+run("32-bit");
+selectWindow("C2reg");
+run("32-bit");
+selectWindow("C1-Prist");
+run("32-bit");
+selectWindow("C2-Prist");
+run("32-bit");
+run("Concatenate...", "  title=[Concatenated Stacks] keep image1=[C1reg] image2=[C2reg] image3=[C1-Prist] image4=[C2-Prist] image5=[-- None --]");
+selectWindow("Concatenated Stacks");
+roiManager("Select", 0); // Roi nr 0 is from background subtraction
+	    //dir=getDirectory("");
+	  	f = File.open(""); // display file open dialog
+	 run("Plot Z-axis Profile");    run("Close");
+       for (i=1; i<=(nSlices/4); i++){
+  	j = (i-1);
+  	k = (i-1+nSlices/4);
+  	l = (i-1+nSlices/4*2);
+  	m = (i-1+nSlices/4*3);
+  	c1reg=getResult("Mean",(j));
+  	c2reg= getResult("Mean",(k));
+  	c1prist= getResult("Mean",(l));
+  	c2prist= getResult("Mean",(m));
+  	print(f, c1reg + "  \t" + c2reg + "  \t" + c1prist + "  \t" + c2prist);}
+selectWindow("Concatenated Stacks");
+run("Close");
+
+roiManager("deselect");
+roidir=File.directory;  
+rl = getFileList(roidir);
+k = rl.length; 
+roiManager("deselect");
+roiManager("save", roidir + u + "_BGRoi_" + k + ".zip");
+
+
+
+}
+
+
+
+
+
