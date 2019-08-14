@@ -1,0 +1,95 @@
+
+   macro "Save Action Tool - Cf00T1e19SS" {
+
+
+
+
+dir = getDirectory("");
+setBatchMode(true);
+path = "C:/Users/Sony/Desktop/temptitles/";
+list = getFileList(path);
+i = list.length; 
+SI = File.openAsString(path + i + ".txt"); 
+lines=split(SI,"\t\n");
+for (i=0; i<lines.length; i++){
+         n = lines[i];}
+//      print(n);
+//n="testtest"
+//print(n); //works
+//showMessageWithCancel("","name given?");
+selectWindow("DICreg");
+
+run("32-bit");
+run("Merge Channels...", "c1=C1-Prist c2=C1reg c3=[Result of C1-tobeanalysed] c4=C2-Prist c5=C2reg c6=[Result of C2-tobeanalysed] c7=DICreg keep");
+run("Channels Tool...");
+Stack.setChannel(2);
+run("Green");
+Stack.setChannel(4);
+run("Red");
+rename("R "+n);
+
+/*important: this has to be put when 60x objective x1.5 was used:*/
+/*run("Set Scale...", "distance=4.54 known=0.6666667 pixel=1 unit=micron");
+run("Scale Bar...", "width=5 height=4 font=14 color=White background=None location=[Lower Right] bold label"); */
+
+selectWindow("R "+n);
+run("Select All");
+//waitForUser("convert manually")
+saveAs("tiff", dir + "C_" +  n);
+
+selectWindow("original");
+run("Select All");
+run("Duplicate...", "duplicate");
+saveAs("tiff", dir + "O_" + n);
+selectWindow("DICreg");
+run("Select All");
+run("Duplicate...", " "); 
+
+
+/*important: this has to be put when 60x objective x1.5 was used:*/
+/*run("Set Scale...", "distance=4.54 known=0.6666667 pixel=1 unit=micron");
+run("Scale Bar...", "width=5 height=4 font=14 color=White background=None location=[Lower Right] bold"); */
+selectWindow("DICreg-1");
+setSlice(1);
+run("Select All");
+saveAs("Jpeg", dir + "TN_" + n);
+selectWindow("Ratio");
+run("Select All");
+run("Duplicate...", "duplicate");
+saveAs("tiff", dir + "Ratio" + n);
+ selectWindow("Log");
+ run("Text...", "save=["+dir + "bg_log_" +n+".txt]");
+showMessageWithCancel("","Close images?");
+setTool("rectangle");
+selectWindow("C1reg");
+run("Close");
+selectWindow("C2reg");
+run("Close");
+selectWindow("C1-Prist");
+run("Close");
+selectWindow("C2-Prist");
+run("Close");
+selectWindow("original");
+run("Close");
+selectWindow("C1-tobeanalysed");
+run("Close");
+selectWindow("C2-tobeanalysed");
+run("Close");
+selectWindow("C2-tobeanalysed-1");
+run("Close");
+selectWindow("Result of C2-tobeanalysed");
+run("Close");
+selectWindow("Result of C1-tobeanalysed");
+run("Close");
+selectWindow("Ratio");
+run("Close");
+selectWindow("Log");
+run("Close");
+selectWindow("DICreg");
+run("Close");
+selectWindow("DICreg-1");
+run("Close");
+selectWindow("Ratio" + n + ".tif");
+run("Close");
+
+}
