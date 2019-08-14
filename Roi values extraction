@@ -1,0 +1,69 @@
+macro "Output Action Tool - Cf00T1e19O" {
+
+if (isOpen("ROI Manager")) {
+     selectWindow("ROI Manager");
+     run("Close"); } // to reset ROImanager
+run("Clear Results");
+
+path = "C:/Users/Sony/Desktop/temptitles/";
+list = getFileList(path);
+i = list.length; 
+SI = File.openAsString(path + i + ".txt"); 
+lines=split(SI,"\t\n");
+for (i=0; i<lines.length; i++){
+         u = lines[i];}
+
+selectWindow("DICreg");
+waitForUser("ROI for profile");
+//setBatchMode(true); don't use problem with concatenated stacks later on!!!
+roiManager("add");
+                if (roiManager("count")==0)
+               exit("you must draw region first");
+               if (roiManager("count")!=1)
+               exit("excess number of rois");
+selectWindow("C1reg");
+run("32-bit");
+selectWindow("C2reg");
+run("32-bit");
+selectWindow("C1-Prist");
+run("32-bit");
+selectWindow("C2-Prist");
+run("32-bit");
+run("Concatenate...", "  title=[Concatenated Stacks] keep image1=[Result of C1-tobeanalysed] image2=[Result of C2-tobeanalysed] image3=[Ratio] image4=[C1reg] image5=[C2reg] image6=[C1-Prist] image7=[C2-Prist]");
+selectWindow("Concatenated Stacks");
+
+roiManager("Select", 0); // Roi nr 0 is from background subtraction
+	  //	dir=getDirectory("");
+//print(OT);
+	  	//waitForUser("");
+	  	f = File.open(""); // display file open dialog
+	 run("Plot Z-axis Profile");    run("Close");
+       for (z=1; z<=(nSlices/7); z++){
+  	j = (z-1);
+  	k = (z-1+nSlices/7);
+  	l = (z-1+nSlices/7*2);
+  	m = (z-1+nSlices/7*3);
+  	n = (z-1+nSlices/7*4);
+  	o = (z-1+nSlices/7*5);
+  	p = (z-1+nSlices/7*6);
+  	valuec1=getResult("Mean",(j));
+  	valuec2= getResult("Mean",(k));
+  	valueratio= getResult("Mean",(l));
+  	c1reg= getResult("Mean",(m));
+  	c2reg= getResult("Mean",(n));
+  	c1prist= getResult("Mean",(o));
+  	c2prist= getResult("Mean",(p));
+  	print(f, valuec1 + "  \t" + valuec2 + "  \t" + valueratio+ "  \t" + c1reg + "  \t" + c2reg + "  \t" + c1prist + "  \t" + c2prist);}
+selectWindow("Concatenated Stacks");
+run("Close");
+
+roiManager("deselect");
+roidir=File.directory;  
+rl = getFileList(roidir);
+k = rl.length; 
+roiManager("deselect");
+roiManager("save", roidir + u + "_PRoi_" + k + ".zip");
+
+	
+}
+
